@@ -105,7 +105,7 @@ def getArgs(parser) :
                   
    KEYWORD PARAMETERS: None
                   
-   OUTPUTS: 
+   OUTPUTS: The data class PARAMS
             Azimuth : A value the user wants to command the controller to point to.
             Elevation : A value the user wants to command the controller to point to.
             deltaAzEl : A two element list containing the delta Azimuth and delta
@@ -115,6 +115,7 @@ def getArgs(parser) :
             the OverrideSoftLimit, Stop and Reset commands.
             Position :  A four element list indentifying the latitude, longitude,
             altitude  and location of the user.
+            saveDir : The path of the directory to save the data file in.
             Command :  The command the user wants to send to the controller.
                  
    OPTIONAL OUTPUTS:  None
@@ -176,6 +177,9 @@ def getArgs(parser) :
   parser.add_argument('-LOC', '--Location', default = 'Air Force Academy',
                       help = 'Text description of location', type = str)
 
+  parser.add_argument('-SD', '--SaveDirectory', default = '/home/jdw/Sparc/Quickset/',
+                      help = 'Directory to save data in.', type = str)
+
   parser.add_argument('-C','--Command', default = '',
                       help = CommandList, type = str)
 
@@ -196,6 +200,7 @@ def getArgs(parser) :
   Latitude = args.Latitude
   Longitude = args.Longitude
   Location = args.Location
+  saveDirectory = args.SaveDirectory
   Command = args.Command
   Command = Command.lower()
   
@@ -203,7 +208,8 @@ def getArgs(parser) :
   Speeds = [panSpeed, tiltSpeed]
   StatusJogFlags = [ResolverUnits, OSL, Stop, Res]
   Position = [Altitude, Latitude, Longitude, Location]
-  return [Azimuth, Elevation, deltaAzEl, Speeds, StatusJogFlags, Position, Command]
+  return [Azimuth, Elevation, deltaAzEl, Speeds, StatusJogFlags, Position,
+  saveDirectory, Command]
 
 #End of the function getArgs(parser).py
 
@@ -433,9 +439,10 @@ def writePanTiltValues(PARAMS, panCoord, tiltCoord) :
   #Get the date and time.
 
 
-  \
-  #Generate a filename.
 
+  
+  #Generate a filename.
+  filename = 
   
   #Write the data to a file.
   if(path.exists(filename)) :
