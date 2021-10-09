@@ -2,27 +2,23 @@
 
 def getParams(params) :
 
-    """
-
-    NAME:
+  """
+    NAME: getParams(params)
            
-    PURPOSE:
+    PURPOSE: Fill the data class named params.
              
-    CATEGORY:
+    CATEGORY: Machine Control.
               
-    CALLING SEQUENCE:
+    CALLING SEQUENCE: Called by QPT.py
   
     INPUTS:
-                   : 
-                   : 
-                   : 
-                   : 
+            params : A list of parameters as returned by the parser function getArgs.py
   
-    OPTIONAL INPUTS:
+    OPTIONAL INPUTS: None
                   
-    KEYWORD PARAMETERS:
+    KEYWORD PARAMETERS: None
                   
-    OUTPUTS:
+    OUTPUTS: N
                  
     OPTIONAL OUTPUTS:
                    
@@ -57,10 +53,9 @@ def getParams(params) :
         latitude : float
         longitude : float
         location : str
+        saveDir : str
         command : str
     #End of the PARAMS class definition.
-
-#    breakpoint()   
 
     Azimuth = params[0]
     Elevation = params[1]
@@ -76,7 +71,8 @@ def getParams(params) :
     latitude = params[5][1]
     longitude = params[5][2]
     location = params[5][3]
-    command = params[6]
+    saveDir = params[6]
+    command = params[7]
     
     #Fill the PARAMS class.
     Params = PARAMS(
@@ -94,6 +90,7 @@ def getParams(params) :
         latitude,
         longitude,
         location,
+        saveDir,
         command)
 
     return Params
