@@ -537,14 +537,34 @@ def getLittleEndian(value, nbits) :
   byte1 = int(hexnum[2] + hexnum[3], 16)
   byte2 = int(hexnum[0] + hexnum[1], 16)
 
+  #We need to check to see that byte1 and/or byte2 does not match a control
+  #character.
+  ESCAPE = 0x1B
+  byteDict = {'byte1' : [], 'byte2' : []}
+  
+  if((byte1==STX) or (byte1==ETX) or (byte1==ACK) or (byte1==NAK) or (byte1==ESC)) :
+    #The byte is the same as the control character.  We add an escape and flip the
+    #seventh bit.  This will result in two bytes being returned.
+    b1 = [ESCAPE, byte1^0x80]
+  else :
+    b1 = [byte1] 
+  byteDict['byte1'] = b1
+  
+  if((byte2==STX) or (byte2==ETX) or (byte2==ACK) or (byte2==NAK) or (byte2==ESC)) :
+    #The byte is the same as the control character.  We add an escape and flip the
+    #seventh bit.  This will result in two bytes being returned.
+    b2 = [ESCAPE, byte2^0x80]
+  else :
+    b2 = [byte2] 
+  byteDict['byte2'] = b2
+
   #Return a list of the properly ordered integers.
-  return [byte1, byte2]
+  return byteDict
 #End of the function getLittle.py
 
 #################################################################################
 
 #################################################################################
-
 
 #Define a function that checks to see if value to be put into the command is a control
 #character.
@@ -585,11 +605,7 @@ def notControlCharacter(b) :
 
   """
 
-    if((b == STX) or (b == ETX) or (b == ACK) or (b == NAK) or (b == ESC)) :
-        return False
-    else :
-        return True
-    #End of if-else clause.
+
 
 #End of the function notControlCharacter.py
 
