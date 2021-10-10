@@ -546,9 +546,10 @@ def getLittleEndian(value, nbits) :
     #The byte is the same as the control character.  We add an escape and flip the
     #seventh bit.  This will result in two bytes being returned.
     b1 = [ESCAPE, byte1^0x80]
+    byteDict['byte1'] = b1
   else :
     b1 = [byte1] 
-  byteDict['byte1'] = b1
+    byteDict['byte1'] = b1
   
   if((byte2==STX) or (byte2==ETX) or (byte2==ACK) or (byte2==NAK) or (byte2==ESC)) :
     #The byte is the same as the control character.  We add an escape and flip the
@@ -556,59 +557,12 @@ def getLittleEndian(value, nbits) :
     b2 = [ESCAPE, byte2^0x80]
   else :
     b2 = [byte2] 
-  byteDict['byte2'] = b2
+    byteDict['byte2'] = b2
 
   #Return a list of the properly ordered integers.
   return byteDict
+
 #End of the function getLittle.py
-
-#################################################################################
-
-#################################################################################
-
-#Define a function that checks to see if value to be put into the command is a control
-#character.
-
-def notControlCharacter(b) :
-  """
-
-   NAME: notControlCharacter(b)
-           
-   PURPOSE: Check to see if any of the command components are of the form of one of
-   the control characters.  If they are then we prepend an escape character to the
-   command and then set the Bit-7 of the conflicting byte.
-             
-   CATEGORY: Machine Control
-              
-   CALLING SEQUENCE:  Called by all functions that send commands to the controller.
-  
-   INPUTS:
-           b : The byte to be checked.
-  
-   OPTIONAL INPUTS: None
-                  
-   KEYWORD PARAMETERS: None
-                  
-   OUTPUTS: The correctly escaped byte
-                 
-   OPTIONAL OUTPUTS: None
-                   
-   SIDE EFFECTS: The incoming byte is escaped if necessary.
-                   
-   RESTRICTIONS: None
-                   
-   EXAMPLE:
-  
-   MODIFICATION HISTORY:
-             Written by jdw on October 8, 2021
-
-
-  """
-
-
-
-#End of the function notControlCharacter.py
-
 #################################################################################
 
 #################################################################################
