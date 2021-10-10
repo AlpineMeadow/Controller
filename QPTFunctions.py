@@ -1262,118 +1262,64 @@ def readControllerOutput(ser, chunkSize=200):
 
 ###################################################################################
 
+def parseControllerOutput(PARAMS, bufferOutput) :
 
-def parseMoveToZeroZeroOutput(PARAMS, readBufferCoodinates) :
   """
 
-   NAME:
+   NAME:  parseControllerOutput(PARAMS, BufferOutput)
            
-   PURPOSE:
+   PURPOSE:  Abstract the information from the return output of the controller.
              
-   CATEGORY:
+   CATEGORY : Machine Control.
               
-   CALLING SEQUENCE:
+   CALLING SEQUENCE:  called by sendCommand.py
   
    INPUTS:
-                   : 
-                   : 
-                   : 
-                   : 
+           PARAMS : The parameter data class.
+           bufferOutput : The output obtained from the controller.
   
-   OPTIONAL INPUTS:
+   OPTIONAL INPUTS: None
                   
-   KEYWORD PARAMETERS:
+   KEYWORD PARAMETERS: None
                   
-   OUTPUTS:
+   OUTPUTS: None
                  
-   OPTIONAL OUTPUTS:
+   OPTIONAL OUTPUTS: None
                    
-   SIDE EFFECTS:
+   SIDE EFFECTS: The controller output is written by the function
+   writePanTiltValues.py which is called from this function.
                    
-   RESTRICTIONS:
+   RESTRICTIONS: None
                    
-   EXAMPLE:
+   EXAMPLE: parseBuffer = QPTF.parseControllerOutput(PARAMS, readBufferCoordinates)
   
    MODIFICATION HISTORY:
-             Written by jdw on 
+             Written by jdw on October 10, 2021
 
   """
 
-  if(len(readBufferCoordinates) > 0) :
-    ackByte = readBufferCoordinates[0]
-    Command = readBufferCoordinates[1]
-    panCoord = readBufferCoordinates[2]
-    tiltCoord = readBufferCoordinates[3]
-    panStatus = readBufferCoordinates[4]
-    tiltStatus = readBufferCoordinates[5]
-    genStatus = readBufferCoordinates[6]
-    LRC = readBufferCoordinates[7]
-    ETX = readBufferCoordinates[8]
-
-    #Check to see if any of the controller Status flags are active.
-    getControllerFlagsStatus('Pan', panStatus)
-    getControllerFlagsStatus('Tilt', tiltStatus)
-    getControllerFlagsStatus('Gen', genStatus)
-
-    #Write returned pan and tilt values to a file.
-    writePanTiltValues(PARAMS, panCoord, tiltCoord)
-    return
-    
-#End of the function parseMoveToZeroZeroOutput.py  
-###################################################################################
-
-###################################################################################
-
-def parseMoveToEnteredCoordsOutput(PARAMS, readBufferCoodinates) :
-
-  """
-
-   NAME:
-           
-   PURPOSE:
-             
-   CATEGORY:
-              
-   CALLING SEQUENCE:
+  #Separate out the various bytes of information returned by the controller.
+  ackByte = bufferOutput[0]
+  Command = bufferOutput[1]
+  panCoord = bufferOutput[2]
+  tiltCoord = bufferOutput[3]
+  panStatus = bufferOutput[4]
+  tiltStatus = bufferOutput[5]
+  genStatus = bufferOutput[6]
+  LRC = bufferOutput[7]
+  ETX = bufferOutput[8]
   
-   INPUTS:
-                   : 
-                   : 
-                   : 
-                   : 
-  
-   OPTIONAL INPUTS:
-                  
-   KEYWORD PARAMETERS:
-                  
-   OUTPUTS:
-                 
-   OPTIONAL OUTPUTS:
-                   
-   SIDE EFFECTS:
-                   
-   RESTRICTIONS:
-                   
-   EXAMPLE:
-  
-   MODIFICATION HISTORY:
-             Written by jdw on 
+  #Check to see if any of the controller Status flags are active.
+  getControllerFlagsStatus('Pan', panStatus)
+  getControllerFlagsStatus('Tilt', tiltStatus)
+  getControllerFlagsStatus('Gen', genStatus)
 
-  """
+  #Write returned pan and tilt values to a file.
+  writePanTiltValues(PARAMS, panCoord, tiltCoord)
 
-    ackByte = readBufferCoordinates[0]
-    Command = readBufferCoordinates[1]
-    panCoord = readBufferCoordinates[2]
-    tiltCoord = readBufferCoordinates[3]
-    panStatus = readBufferCoordinates[4]
-    tiltStatus = readBufferCoordinates[5]
-    genStatus = readBufferCoordinates[6]
-    LRC = readBufferCoordinates[7]
-    ETX = readBufferCoordinates[8]
+  return
 
-  
-
-#End of the function parseMoveToEnteredCoordsOutput.py  
+#End of the function parseControllerOutput.py  
 ###################################################################################
 
 ###################################################################################
@@ -1433,7 +1379,7 @@ def sendCommand(PARAMS, ser, Command) :
       readBufferCoordinates = QPTF.readControllerOutput(ser, chunk_size = 200)
 
       #Parse that information and communicate to the user any errors.
-      parseBuffer = QPTF.parseEnteredCoordinatesOutput(readBufferCoordinates)
+      parseBuffer = QPTF.parseControllerOutput(PARAMS, readBufferCoordinates)
       
       keepSending = 0  #Change flag so as to stop the while loop.
     #End of if statement - if(bytesWritten != 0) :
