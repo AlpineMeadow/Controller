@@ -208,6 +208,7 @@ def getArgs(parser) :
   Speeds = [panSpeed, tiltSpeed]
   StatusJogFlags = [ResolverUnits, OSL, Stop, Res]
   Position = [Altitude, Latitude, Longitude, Location]
+
   return [Azimuth, Elevation, deltaAzEl, Speeds, StatusJogFlags, Position,
   saveDirectory, Command]
 
@@ -227,7 +228,7 @@ def getElevation(latitude, longitude) :
              
    CATEGORY: Machine Control
               
-   CALLING SEQUENCE: Called by writePanTiltValues.py
+   CALLING SEQUENCE: Called by QPT.py
   
    INPUTS:
            latitude : The latitude of the location.  This is of type float. 
@@ -264,11 +265,9 @@ def getElevation(latitude, longitude) :
 
 #End of the function getElevation(latitude, longitude).py
 
-
 #################################################################################
 
 #################################################################################
-
 
 def getControllerFlagsStatus(moveType, controllerOutput) :
   """
@@ -396,7 +395,6 @@ def getControllerFlagsStatus(moveType, controllerOutput) :
 
 #################################################################################
 
-
 def writePanTiltValues(PARAMS, panCoord, tiltCoord) :
   """
 
@@ -432,25 +430,28 @@ def writePanTiltValues(PARAMS, panCoord, tiltCoord) :
              Written by jdw on October 8, 2021
 
   """
-
+  import time
   
-
-
   #Get the date and time.
+  timestr = time.localtime()
 
+  yearStr = str('{0:02d}'.format(timestr[0]))
+  monthStr = str('{0:02d}'.format(timestr[1]))
+  dayStr = str('{0:02d}'.format(timestr[2]))
+  hourStr = str('{0:02d}'.format(timestr[3]))
+  minuteStr = str('{0:02d}'.format(timestr[4]))
 
+  dateTime = yearStr + monthStr + dayStr + '_' + hourStr + ':' + minuteStr
 
-  
   #Generate a filename.
-  filename = 
+  filename = PARAMS.saveDir + PARAMS.location + dateTime + '.csv'
   
   #Write the data to a file.
   if(path.exists(filename)) :
     #Append to the file.
     with open(filename, mode='a') as f :
-      stock_writer = csv.writer(f, delimiter=',')
-      for i in range(len(LST)) :
-        stock_writer.writerow([datetime, pan, tilt])
+      dataWriter = csv.writer(f, delimiter=',')
+      dataWriter.writerow([datetime, pan, tilt])
       #End of the for loop - for i in range(len(LST)):
     #End of the with statement - with open(filename, mode='a') as f :
 
@@ -467,7 +468,6 @@ def writePanTiltValues(PARAMS, panCoord, tiltCoord) :
   return
 
 #End of the function writePanTiltValues.py
-
 
 #################################################################################
 
