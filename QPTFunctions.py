@@ -603,21 +603,21 @@ def getCheckSum(Values) :
 
   """
 
-    import numpy as np
+  import numpy as np
 
-    #Find the number of sub-commands to be XORed.
-    n = len(Values)
+  #Find the number of sub-commands to be XORed.
+  n = len(Values)
 
-    #Get the first value to XOR.  I want to make these values into signed 8-bit integers.
-    result = np.int8(Values[0])
+  #Get the first value to XOR.  I want to make these values into signed 8-bit integers.
+  result = np.int16(Values[0])
     
-    #Loop through the remaining values, XORing them to the original result.
-    for i in range(n - 1) :
-        result ^= np.int8(Values[i + 1])
-    #End of for loop; For i in range(n - 1) :
+  #Loop through the remaining values, XORing them to the original result.
+  for i in range(n - 1) :
+    result ^= np.int16(Values[i + 1])
+  #End of for loop; For i in range(n - 1) :
     
-    #Convert to hexidecimal and return.
-    return result
+  #Convert to hexidecimal and return.
+  return result
 
 #End of the function getCheckSum.py
 #################################################################################
@@ -661,40 +661,40 @@ def sendTimeout(PARAMS, ser, timeLength, Query = 0) :
 
   """
 
-    import numpy as np
+  import numpy as np
 
-    #The Query variable is essentially a flag.  If set to 1, the controller will return the
-    #current value of the timeout without changing it.  If set to 0, the controller will send
-    #the timelength value to the controller.  Since we will call this function with the express
-    #purpose of changing the timeout value we will set Query to zero automatically.
+  #The Query variable is essentially a flag.  If set to 1, the controller will return the
+  #current value of the timeout without changing it.  If set to 0, the controller will send
+  #the timelength value to the controller.  Since we will call this function with the express
+  #purpose of changing the timeout value we will set Query to zero automatically.
     
-    #Normally a communication timeout is considered a fault of sufficient weight to stop any
-    #automated movement of the controller.
-    #Setting the timeout value to zero will result in the controller operating autonomously.
-    #This setting defeats any stop due to a communication fault.
-    CommandNumber = 0x96
+  #Normally a communication timeout is considered a fault of sufficient weight to stop any
+  #automated movement of the controller.
+  #Setting the timeout value to zero will result in the controller operating autonomously.
+  #This setting defeats any stop due to a communication fault.
+  CommandNumber = 0x96
 
-    if(Query) :
-      #We change the 0th bit to 1.
-      Timeout = 0x1
-    else :
-      numbits = 16
-      Timeout = getLittleEndian(timelength, numbits)
-    #End of if-else clause.
+  if(Query) :
+    #We change the 0th bit to 1.
+    Timeout = 0x1
+  else :
+    numbits = 16
+    Timeout = getLittleEndian(timelength, numbits)
+  #End of if-else clause.
 
-    #Generate the LRC checksum.  
-    Values = [CommandNumber, Timeout[0], Timeout[1]]
-    LRC = getCheckSum(Values)
+  #Generate the LRC checksum.  
+  Values = [CommandNumber, Timeout[0], Timeout[1]]
+  LRC = getCheckSum(Values)
 
-    Command = bytearray()
-    Command.append(STX)
-    Command.append(CommandNumber)
-    Command.append(Timeout)
-    Command.append(LRC)
-    Command.append(ETX)
+  Command = bytearray()
+  Command.append(STX)
+  Command.append(CommandNumber)
+  Command.append(Timeout)
+  Command.append(LRC)
+  Command.append(ETX)
 
-    sendCommand(ser, Command)
-    return 
+  sendCommand(ser, Command)
+  return 
 
 #End of the function sendTimeout.py
 
@@ -794,39 +794,39 @@ def sendStop(PARAMS, ser) :
   #suspect that I will be able to do this through the getStatus/Jog command but I haven't worked
   #out the details.
 
-    CommandNumber = 0x31
+  CommandNumber = 0x31
 
-    #Set the stopByte of the CommandByte to an integer value of 2(00000010).
-    RES = 0  #00000000 in binary.
-    OverrideSoftLimit = 0  #00000000 in binary.
-    StopByte = 2 #00000010 in binary.
-    RU = 0 #00000000 in binary.
-    CmdByte = RU + OverrideSoftLimit + StopByte + RES
+  #Set the stopByte of the CommandByte to an integer value of 2(00000010).
+  RES = 0  #00000000 in binary.
+  OverrideSoftLimit = 0  #00000000 in binary.
+  StopByte = 2 #00000010 in binary.
+  RU = 0 #00000000 in binary.
+  CmdByte = RU + OverrideSoftLimit + StopByte + RES
 
-    JogPanSpeed = 0x0  #Setting this to zero will stop the controller from panning.
-    JogTiltSpeed = 0x0  #Setting this to zero will stop the controller from tilting.
+  JogPanSpeed = 0x0  #Setting this to zero will stop the controller from panning.
+  JogTiltSpeed = 0x0  #Setting this to zero will stop the controller from tilting.
 
-    #If the stop bit is set, then it must be unset in order to get the controller to move.  In
-    #principle this should be set to : StopByte = 0.
+  #If the stop bit is set, then it must be unset in order to get the controller to move.  In
+  #principle this should be set to : StopByte = 0.
 
-    #Generate the LRC checksum.  
-    Values = [CommandNumber, Command, JogPanSpeed, JogTiltSpeed]
-    LRC = getCheckSum(Values)
+  #Generate the LRC checksum.  
+  Values = [CommandNumber, Command, JogPanSpeed, JogTiltSpeed]
+  LRC = getCheckSum(Values)
 
-    #Generate the command.
-    Command = bytearray()
-    Command.append(STX)
-    Command.append(CommandNumber)
-    Command.append(Command) 
-    Command.append(JogPanSpeed)
-    Command.append(JogTiltSpeed)
-    Command.append(LRC)
-    Command.append(ETX)
+  #Generate the command.
+  Command = bytearray()
+  Command.append(STX)
+  Command.append(CommandNumber)
+  Command.append(Command) 
+  Command.append(JogPanSpeed)
+  Command.append(JogTiltSpeed)
+  Command.append(LRC)
+  Command.append(ETX)
 
-    #Send the command to the controller.
-    sendCommand(PARAMS, ser, Command)
+  #Send the command to the controller.
+  sendCommand(PARAMS, ser, Command)
     
-    return
+  return
 
 #End of the function sendStop.py
 
@@ -1008,19 +1008,69 @@ def moveToEnteredCoords(PARAMS, ser) :
   numbits = 16
   AzBytes = getLittleEndian(Az, numbits)
   ElBytes = getLittleEndian(El, numbits)
-    
+
   #Generate the checksum(Longitudinal reduncancy check).
-  Values = [CommandNumber, AzBytes[0], AzBytes[1], ElBytes[0], ElBytes[1]]
-  LRC = getCheckSum(Values)
+  Values = [CommandNumber]
 
   #Set up the command array.
   Command = bytearray()
   Command.append(STX)
   Command.append(CommandNumber)
-  Command.append(AzBytes[0])
-  Command.append(AzBytes[1])
-  Command.append(ELBytes[0])
-  Command.append(ElBytes[1])
+
+  if(len(AzBytes['byte1']) == 1) :
+    AzByte10 = AzBytes['byte1'][0]
+    Command.append(AzByte10)
+    Values.append(AzByte10)
+  else :
+    AzByte10 = AzBytes['byte1'][0]
+    AzByte11 = AzBytes['byte1'][1]
+    Command.append(AzByte10)
+    Command.append(AzByte11)
+    Values.append(AzByte10)
+    Values.append(AzByte11)
+  #End of if-else clause.
+  
+  if(len(AzBytes['byte2']) == 1) :
+    AzByte20 = AzBytes['byte2'][0]
+    Command.append(AzByte20)
+    Values.append(AzByte20)
+  else :
+    AzByte20 = AzBytes['byte2'][0]
+    AzByte21 = AzBytes['bytes'][1]
+    Command.append(AzByte20)
+    Command.append(AzByte21)
+    Values.append(AzByte20)
+    Values.append(AzByte21)
+  #End of if-else clause.
+  
+  if(len(ElBytes['byte1']) == 1) :
+    ElByte10 = ElBytes['byte1'][0]
+    Command.append(ElByte10)
+    Values.append(ElByte10)
+  else :
+    ElByte10 = ElBytes['byte1'][0]
+    ElByte11 = ElBytes['byte1'][1]
+    Command.append(ElByte10)
+    Command.append(ElByte11)
+    Values.append(ElByte10)
+    Values.append(ElByte11)
+  #End of if-else clause.
+  
+  if(len(ElBytes['byte2']) == 1) :
+    ElByte20 = ElBytes['byte2'][0]
+    Command.append(ElByte20)
+    Values.append(ElByte20)
+  else :
+    ElByte20 = ElBytes['byte2'][0]
+    ElByte21 = ElBytes['bytes'][1]
+    Command.append(ElByte20)
+    Command.append(ElByte21)
+    Values.append(ElByte20)
+    Values.append(ElByte21)
+  #End of if-else clause.
+
+
+  LRC = getCheckSum(Values)
   Command.append(LRC)
   Command.append(ETX)
   
@@ -1039,58 +1089,57 @@ def moveToEnteredCoords(PARAMS, ser) :
 def moveToZeroZero(PARAMS, ser) :
   """
 
-   NAME:
+   NAME: moveToZeroZero(PARAMS, ser)
            
-   PURPOSE:
+   PURPOSE: Send to the controller the command to move to zero pan and zero tilt
+   coordinates. 
              
-   CATEGORY:
+   CATEGORY: Machine Control.
               
-   CALLING SEQUENCE:
+   CALLING SEQUENCE:  Called by QPT.py
   
    INPUTS:
-                   : 
-                   : 
-                   : 
-                   : 
+           PARAMS : The parameter data class.
+           ser : The serial port object.
   
-   OPTIONAL INPUTS:
+   OPTIONAL INPUTS: None
                   
-   KEYWORD PARAMETERS:
+   KEYWORD PARAMETERS: None
                   
-   OUTPUTS:
+   OUTPUTS: None
                  
-   OPTIONAL OUTPUTS:
+   OPTIONAL OUTPUTS: None
                    
-   SIDE EFFECTS:
+   SIDE EFFECTS: The move to zero pan and zero tilt command is sent the controller.
                    
-   RESTRICTIONS:
+   RESTRICTIONS: None
                    
-   EXAMPLE:
+   EXAMPLE: moveToZeroZero(PARAMS, ser)
   
    MODIFICATION HISTORY:
-             Written by jdw on 
+             Written by jdw on October 10, 2021
 
   """
 
-    CommandNumber = 0x35
-    STX = 0x2
-    ETX = 0x3
+  CommandNumber = 0x35
+  STX = 0x2
+  ETX = 0x3
 
-    #Get the check sum value.
-    Values = [CommandNumber]
-    LRC = getCheckSum(Values)
+  #Get the check sum value.
+  Values = [CommandNumber]
+  LRC = getCheckSum(Values)
 
-    #Set up the command array.
-    Command = bytearray()
-    Command.append(STX)
-    Command.append(CommandNumber)
-    Command.append(LRC)
-    Command.append(ETX)
+  #Set up the command array.
+  Command = bytearray()
+  Command.append(STX)
+  Command.append(CommandNumber)
+  Command.append(LRC)
+  Command.append(ETX)
 
-    #Send the command to the controller.
-    sendCommand(PARAMS, ser, Command)
+  #Send the command to the controller.
+  sendCommand(PARAMS, ser, Command)
     
-    return 
+  return 
 
 #End of the function moveToZeroZero.py
 
@@ -1249,9 +1298,9 @@ def readControllerOutput(ser, chunkSize=200):
   while True:
     # Read in chunks. Each chunk will wait as long as specified by
     # timeout. Increase chunk_size to fail quicker
-    byte_chunk = ser.read(size=chunk_size)
+    byte_chunk = ser.read(size = chunkSize)
     read_buffer += byte_chunk
-    if not len(byte_chunk) == chunk_size:
+    if not len(byte_chunk) == chunkSize:
       break
   #End of while clause - while True :
   
@@ -1298,6 +1347,7 @@ def parseControllerOutput(PARAMS, bufferOutput) :
 
   """
 
+  breakpoint()
   #Separate out the various bytes of information returned by the controller.
   ackByte = bufferOutput[0]
   Command = bufferOutput[1]
@@ -1360,28 +1410,59 @@ def sendCommand(PARAMS, ser, Command) :
 
   """
 
-  #Set a truth value.
+  import binascii
+
+  def readAll(port, chunk_size=200):
+    """Read all characters on the serial port and return them."""
+    if not port.timeout:
+        raise TypeError('Port needs to have a timeout set!')
+
+    read_buffer = b''
+
+    while True:
+        # Read in chunks. Each chunk will wait as long as specified by
+        # timeout. Increase chunk_size to fail quicker
+        byte_chunk = port.read(size=chunk_size)
+        read_buffer += byte_chunk
+        if not len(byte_chunk) == chunk_size:
+            break
+
+    return read_buffer
+
+  #Set some truth values.
   keepSending = 1
+  keepSynching = 1
   
   #Loop to get the server synched with the controller.  Once it is synched then send the
   #command. 
-  while(keepSending) :
+  while(keepSynching) :
 
     #Send the simplest Get Status/Jog command to snych up with the controller.
     bytesWritten = ser.write(getSimpleStatusCommand())
-    
-    if(bytesWritten != 0) :
-      
-      #The server is snyched up with the controller so lets send the command.
-      StatusWritten = ser.write(Command)
+    readBuffer1 = readAll(ser, chunk_size = 200)
+    if(len(readBuffer1) != 0) :  #The server has synched up with the controller.
 
-      #Read the information sent from the controller to the server.
-      readBufferCoordinates = QPTF.readControllerOutput(ser, chunk_size = 200)
+      while(keepSending) :
+       #The server is snyched up with the controller so lets send the command.
+       bytesWritten = ser.write(Command)
+#       readBufferCoordinates = readControllerOutput(ser, chunkSize = 200)
 
-      #Parse that information and communicate to the user any errors.
-      parseBuffer = QPTF.parseControllerOutput(PARAMS, readBufferCoordinates)
-      
-      keepSending = 0  #Change flag so as to stop the while loop.
+       
+       readBuffer = readAll(ser, chunk_size = 200)
+       lenReadBuffer = len(readBuffer)
+       print('Length of the readBuffer output', lenReadBuffer)
+       print('readBuffer : ',readBuffer)
+       print('What the conroller wrote to the server : ',binascii.hexlify(readBuffer))
+       if(lenReadBuffer != 0) :
+          #Read the information sent from the controller to the server.
+
+
+          #Parse that information and communicate to the user any errors.
+#          parseBuffer = parseControllerOutput(PARAMS, readBufferCoordinates)
+          keepSending = 0
+        #End of if statement - if(len(StatusWritten != 0)
+        
+      keepSynching = 0  #Change flag so as to stop the while loop.
     #End of if statement - if(bytesWritten != 0) :
     
   #End of while statement - while(keepSending) :
