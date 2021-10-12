@@ -54,7 +54,9 @@ def main() :
   if(PARAMS.command == 'send status jog') :
     QPTF.sendStatusJog(PARAMS, ser)
   #End of if statement - if(PARAMS.command == 'SendStatusJog') :
-  
+
+  if(PARAMS.command == 'read pointing') :
+    QPTF.readPointing(PARAMS, ser)
   if(PARAMS.command == 'send stop') :
     QPTF.sendStop(PARAMS, ser)
   #End of if statement- if(PARAMS.command == 'SendStatusJog') :
