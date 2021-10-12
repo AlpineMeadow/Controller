@@ -131,7 +131,7 @@ def getArgs(parser) :
 
   """
 
-  CommandList = ('Possible Commands are: \n' + 'Get Status Jog, Move to Entered Coordinates, Move to Zero Zero, Move to Delta Coordinates, Move to Home, Send Stop')
+  CommandList = ('Possible Commands are: \n' + 'Get Status Jog, Move to Entered Coordinates, Move to Zero Zero, Move to Delta Coordinates, Move to Home, Send Stop', 'Read Pointing')
 
   
   #Get the parameters
@@ -1470,6 +1470,152 @@ def sendCommand(PARAMS, ser, Command) :
   return
 
 #End of the function sendCommand.py
+###################################################################################
+
+###################################################################################
+
+def readPointing(PARAMS, ser) :
+  
+  """
+
+   NAME: readPointing(PARAMS, ser)
+           
+   PURPOSE:  Read pointing locations(Az, El) from a file instead of being user supplied.
+             
+   CATEGORY: Machine Control
+              
+   CALLING SEQUENCE: Called by QPT.py
+  
+   INPUTS:
+           PARAMS : The parameter data class.
+           ser : The serial port object.
+  
+   OPTIONAL INPUTS: None
+                  
+   KEYWORD PARAMETERS: None
+                  
+   OUTPUTS:  None
+                 
+   OPTIONAL OUTPUTS: None
+                   
+   SIDE EFFECTS: The controller is moved accoring to the locations in the file.
+                   
+   RESTRICTIONS: None
+                   
+   EXAMPLE: readPointing(PARAMS, ser)
+  
+   MODIFICATION HISTORY:
+             Written by jdw on October 12, 2021
+
+  """
+  import numpy as np
+  
+  #Generate the filename.
+  dirname = PARAMS.saveDir
+  timestr = time.localtime()
+  yearStr = str('{0:02d}'.format(timestr[0]))
+  monthStr = str('{0:02d}'.format(timestr[1]))
+  dayStr = str('{0:02d}'.format(timestr[2]))
+  hourStr = str('{0:02d}'.format(timestr[3]))
+  minuteStr = str('{0:02d}'.format(timestr[4]))
+
+  dateTime = yearStr + monthStr + dayStr + '_' + hourStr + ':' + minuteStr
+
+  filename = dirname + 'Pointing' + dateTime + '.csv'
+
+
+  #Read in the data.
+  pointData = np.loadtxt(filename, delimiter = ',')
+
+  #determine the size of the dataset and the number of its features.
+  m, n = pointData.shape
+
+  CommandNumber = 0x33
+  numbits = 16
+  
+  #Loop through the inputs.
+  for i in range(m) :
+    #Convert the Azimuth and Elevation values into 16-bit signed two's-complement little endian
+    #integers.
+    AzBytes = getLittleEndian(PointData[i, 1], numbits)
+    ElBytes = getLittleEndian(PointData[i, 2], numbits)
+
+    #Generate the checksum(Longitudinal reduncancy check).
+    Values = [CommandNumber]
+
+    #Set up the command array.
+    Command = bytearray()
+    Command.append(STX)
+    Command.append(CommandNumber)
+
+    #This next set of commands gets the unknown azimuth position bytes for each of
+    #the two azimuth bytes.
+    if(len(AzBytes['byte1']) == 1) :
+      AzByte10 = AzBytes['byte1'][0]
+      Command.append(AzByte10)
+      Values.append(AzByte10)
+    else :
+      AzByte10 = AzBytes['byte1'][0]
+      AzByte11 = AzBytes['byte1'][1]
+      Command.append(AzByte10)
+      Command.append(AzByte11)
+      Values.append(AzByte10)
+      Values.append(AzByte11)
+    #End of if-else clause.
+  
+    if(len(AzBytes['byte2']) == 1) :
+      AzByte20 = AzBytes['byte2'][0]
+      Command.append(AzByte20)
+      Values.append(AzByte20)
+    else :
+      AzByte20 = AzBytes['byte2'][0]
+      AzByte21 = AzBytes['bytes'][1]
+      Command.append(AzByte20)
+      Command.append(AzByte21)
+      Values.append(AzByte20)
+      Values.append(AzByte21)
+    #End of if-else clause.
+
+    #This next set of commands gets the unknown elevations position bytes for each of
+    #the two elevation bytes.
+    if(len(ElBytes['byte1']) == 1) :
+      ElByte10 = ElBytes['byte1'][0]
+      Command.append(ElByte10)
+      Values.append(ElByte10)
+    else :
+      ElByte10 = ElBytes['byte1'][0]
+      ElByte11 = ElBytes['byte1'][1]
+      Command.append(ElByte10)
+      Command.append(ElByte11)
+      Values.append(ElByte10)
+      Values.append(ElByte11)
+    #End of if-else clause.
+  
+    if(len(ElBytes['byte2']) == 1) :
+      ElByte20 = ElBytes['byte2'][0]
+      Command.append(ElByte20)
+      Values.append(ElByte20)
+    else :
+      ElByte20 = ElBytes['byte2'][0]
+      ElByte21 = ElBytes['bytes'][1]
+      Command.append(ElByte20)
+      Command.append(ElByte21)
+      Values.append(ElByte20)
+      Values.append(ElByte21)
+    #End of if-else clause.
+
+    LRC = getCheckSum(Values)
+    Command.append(LRC)
+    Command.append(ETX)
+  
+    #Send the command to the controller.
+    sendCommand(PARAMS, ser, Command)
+  #End of for loop - for i in range(m) :
+
+    
+  
+  return
+#End of the function readPointing.py
 ###################################################################################
 
 ###################################################################################
