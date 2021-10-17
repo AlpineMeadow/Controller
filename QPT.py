@@ -15,19 +15,19 @@ def main() :
   
   #Set up the serial port.
   port = '/dev/ttyUSB1'
-  baud_rate = 9600  #Standard baud rate for the controller.
-  byte_size = serial.EIGHTBITS  #Set the size of the byte to be written.
+  baudRate = 9600  #Standard baud rate for the controller.
+  byteSize = serial.EIGHTBITS  #Set the size of the byte to be written.
   parity = serial.PARITY_NONE #Took this from the manual under the Autobaud section.
   timeout = 1  #Not sure what is the best value for this.  I might want to set this to some
   #floating point value.
 
   ser = serial.Serial(
     port = port,
-    baudrate = baud_rate,
-    bytesize = byte_size,
+    baudrate = baudRate,
+    bytesize = byteSize,
     parity = parity,
     timeout = timeout)
-    
+   
   #Fill the PARAMS dataclass.
   PARAMS = gP.getParams(QPTF.getArgs(argparse.ArgumentParser()))
   
