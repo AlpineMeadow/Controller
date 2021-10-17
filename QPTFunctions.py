@@ -1620,3 +1620,164 @@ def readPointing(PARAMS, ser) :
 
 ###################################################################################
 
+def moveToEnteredCoordsFile(PARAMS, ser, filename) :
+  """
+
+   NAME: moveToEnteredCoordsFile(PARAMS, ser)
+           
+   PURPOSE:  Send a command to the controller to move to a set of coordinates read in
+   from a file.
+             
+   CATEGORY: Machine Control.
+              
+   CALLING SEQUENCE:  Called by QPTReadFile.py
+  
+   INPUTS:
+           PARAMS : the parameter data class.
+           ser : The serial port object
+           filename : The absolute path and filename of the file containing the
+           azimuth and elevation coordinates for the planned mission.  The azimuth
+           and elevation coordinates will be in degrees.
+  
+   OPTIONAL INPUTS: None
+                  
+   KEYWORD PARAMETERS: None
+                  
+   OUTPUTS: None
+                 
+   OPTIONAL OUTPUTS: None
+                   
+   SIDE EFFECTS: The controller moves to the entered coordinates.
+                   
+   RESTRICTIONS: None
+                   
+   EXAMPLE: moveToEnteredCoordsFile(PARAMS, ser, filename)
+  
+   MODIFICATION HISTORY:
+             Written by jdw on October 17, 2021
+
+  """
+  import csv
+  
+  #First read in the file.
+  with open(filename) as csvFile :
+    csvReader = csv.reader(csvFile, delimiter = ',')
+    for row in csvReader :
+      dateTime.append(float(row[0]))
+      Azimuth.append(float(row[1]))
+      Elevation.append(float(row[2]))
+    #End of for loop - for row in csvReader:
+  #End of with statement - with open(filename) as csvFile:
+    
+  #Multiply the values by 10 in order to get the proper precision.
+  Azimuth = 10.0*np.asarray(Azimuth)
+  Elevation = 10.0*np.asarray(Elevation)
+
+  #Now convert the resulting angle coordinates into integers.
+  Az = Azimuth.astype(int)
+  El = Elevation.astype(int)
+
+  #Check to see that the Azimuth and Elevation values are within appropriate ranges.
+  numAzHigh = len(Az[Az > 3600])
+  numAzLow = len(Az[Az< -3600])
+  if(numAzHigh > 0):
+    sys.exit('Azimuth values are too high.  Exiting')
+  #End of if statement - if(numAzHigh > 0) :
+  
+  if(numAzLow > 0) :
+    sys.exit('Azimuth values are too low.  Exiting')
+  #End of if statement - if(numAzLow > 0) :
+
+  numElHigh = len(El[El > 1800])
+  numElLow = len(El[El< -1800])
+  if(numElHigh > 0):
+    sys.exit('Elevation values are too high.  Exiting')
+  #End of if statement - if(numElHigh > 0) :
+
+  if(numElLow > 0) :
+    sys.exit('Elevation values are too low.  Exiting')
+  #End of if statement - if(numElLow > 0) :
+  
+  
+  CommandNumber = 0x33
+    
+  #Convert the Azimuth and Elevation values into 16-bit signed two's-complement little endian
+  #integers.
+  numbits = 16
+  AzBytes = getLittleEndian(Az, numbits)
+  ElBytes = getLittleEndian(El, numbits)
+
+  #Generate the checksum(Longitudinal reduncancy check).
+  Values = [CommandNumber]
+
+  #Set up the command array.
+  Command = bytearray()
+  Command.append(STX)
+  Command.append(CommandNumber)
+
+  if(len(AzBytes['byte1']) == 1) :
+    AzByte10 = AzBytes['byte1'][0]
+    Command.append(AzByte10)
+    Values.append(AzByte10)
+  else :
+    AzByte10 = AzBytes['byte1'][0]
+    AzByte11 = AzBytes['byte1'][1]
+    Command.append(AzByte10)
+    Command.append(AzByte11)
+    Values.append(AzByte10)
+    Values.append(AzByte11)
+  #End of if-else clause.
+  
+  if(len(AzBytes['byte2']) == 1) :
+    AzByte20 = AzBytes['byte2'][0]
+    Command.append(AzByte20)
+    Values.append(AzByte20)
+  else :
+    AzByte20 = AzBytes['byte2'][0]
+    AzByte21 = AzBytes['bytes'][1]
+    Command.append(AzByte20)
+    Command.append(AzByte21)
+    Values.append(AzByte20)
+    Values.append(AzByte21)
+  #End of if-else clause.
+  
+  if(len(ElBytes['byte1']) == 1) :
+    ElByte10 = ElBytes['byte1'][0]
+    Command.append(ElByte10)
+    Values.append(ElByte10)
+  else :
+    ElByte10 = ElBytes['byte1'][0]
+    ElByte11 = ElBytes['byte1'][1]
+    Command.append(ElByte10)
+    Command.append(ElByte11)
+    Values.append(ElByte10)
+    Values.append(ElByte11)
+  #End of if-else clause.
+  
+  if(len(ElBytes['byte2']) == 1) :
+    ElByte20 = ElBytes['byte2'][0]
+    Command.append(ElByte20)
+    Values.append(ElByte20)
+  else :
+    ElByte20 = ElBytes['byte2'][0]
+    ElByte21 = ElBytes['bytes'][1]
+    Command.append(ElByte20)
+    Command.append(ElByte21)
+    Values.append(ElByte20)
+    Values.append(ElByte21)
+  #End of if-else clause.
+
+
+  LRC = getCheckSum(Values)
+  Command.append(LRC)
+  Command.append(ETX)
+  
+  #Send the command to the controller.
+  sendCommand(PARAMS, ser, Command)
+  
+  return
+
+#End of the function moveToEnteredCoordsFile.py
+############################################################################
+
+############################################################################
